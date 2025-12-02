@@ -10,7 +10,10 @@ By Yanjie Ze, Siheng Zhao, Weizhuo Wang, Angjoo Kanazawa†, Rocky Duan†, Piet
 
 
 # News
-- **2025-12-02**. TWIST2 is fully open-sourced now. Give it a star on GitHub!
+- **2025-12-02**. TWIST2 is open-sourced now. Give it a star on GitHub!
+   - Disclamer 1: with current repo, you should be able to control Unitree G1 via cable connection in both sim and real with a PICO VR headset. 
+   - Disclamer 2: I am still working on better documentation and cleaning some onboard streaming and inference code (as the teleop pipeline is complex and requires some hardware setup). Please stay tuned.
+   - Disclamer 3: The high-level policy learning part will be released in a separate repo. It is modifed from [iDP3](https://github.com/YanjieZe/Improved-3D-Diffusion-Policy) and I am working on releasing it soon.
 - **2025-11-05**. TWIST2 is released. Full code will be released within 1 month (mostly ready and under the internal process). Please stay tuned.
 
 
