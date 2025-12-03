@@ -10,6 +10,7 @@ By Yanjie Ze, Siheng Zhao, Weizhuo Wang, Angjoo Kanazawa†, Rocky Duan†, Piet
 
 
 # News
+- **2025-12-03**. I will give a video tutorial for TWIST2 next week to show you how to use TWIST2. Please stay tuned.
 - **2025-12-02**. TWIST2 is open-sourced now. Give it a star on GitHub!
    - Disclamer 1: with current repo, you should be able to control Unitree G1 via cable connection in both sim and real with a PICO VR headset. 
    - Disclamer 2: I am still working on better documentation and cleaning some onboard streaming and inference code (as the teleop pipeline is complex and requires some hardware setup). Please stay tuned.
