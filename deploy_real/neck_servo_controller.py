@@ -116,7 +116,8 @@ class NeckServoController:
         self.packet_handler = None
         self.redis_client = None
         self.last_neck_data = [0.0, 0.0]
-        
+        self.neck_state_key = "state_neck_unitree_g1_with_hands"
+        self.neck_state = [0.0, 0.0]
         
     def read_current_position(self, dxl_id):
         """Read current position from a Dynamixel servo"""
@@ -185,7 +186,22 @@ class NeckServoController:
         )
         self.redis_client.ping()
         print(f"Redis connected at {self.args.redis_ip}:6379")
-        
+
+    def dxl_to_rad_position(self, dxl_pos, motor_index):
+        # Dynamixel position to degrees (0-4095 maps to 0-360°)
+        motor_deg = (dxl_pos / self.DXL_MAX_POSITION) * 360.0
+        deg = 0
+
+        if motor_index == 0:  # Yaw motor
+            # inv of: motor_deg = YAW_STRAIGHT_DEG + deg
+            deg = motor_deg - self.YAW_STRAIGHT_DEG
+            
+        elif motor_index == 1:  # Pitch motor
+            # inv of: motor_deg = PITCH_STRAIGHT_DEG - deg
+            deg = self.PITCH_STRAIGHT_DEG - motor_deg
+        rad = deg * (np.pi / 180.0)
+        return rad
+    
     def rad_to_dxl_position(self, rad, motor_index):
         """
         Convert radians to Dynamixel position units with saturation.
@@ -265,7 +281,27 @@ class NeckServoController:
             result, error = self.packet_handler.write4ByteTxRx(self.port_handler, dxl_id, self.ADDR_GOAL_POSITION, positions[i])
             if result != COMM_SUCCESS:
                 print(f"[red]Failed to set position for motor {dxl_id}: {result}[/]")
-            
+    
+    def get_current_neck_state(self):
+        yaw_dxl = self.read_current_position(self.DXL_IDS[0])  # Yaw motor ID 0
+        pitch_dxl = self.read_current_position(self.DXL_IDS[1])  # Pitch motor ID 1
+        
+        if yaw_dxl is None or pitch_dxl is None:
+            print("[red]Failed to read motor positions, returning last known state[/]")
+            return self.neck_state
+        
+        yaw_rad = self.dxl_to_rad_position(yaw_dxl, motor_index=0)
+        pitch_rad = self.dxl_to_rad_position(pitch_dxl, motor_index=1)
+        
+        self.neck_state = [float(yaw_rad), float(pitch_rad)]
+        return self.neck_state
+
+    def pub_neck_state(self, state):
+        try:
+            self.redis_client.set(self.neck_state_key, json.dumps(state))
+        except Exception as e:
+            print(f"[red]Error publishing neck state to Redis: {e}[/]")
+
     def get_neck_from_redis(self):
         """Read neck command from Redis"""
         try:
@@ -322,9 +358,12 @@ class NeckServoController:
         try:
             while True:
                 t_start = time.time()
-                # Two steps:
-                # 1. get neck from redis
-                # 2. set motor position
+                # Three steps:
+                # 1. Read current state and publish back to redis
+                # 2. Get neck command from redis
+                # 3. Set motor position
+                current_state = self.get_current_neck_state()
+                self.pub_neck_state(current_state)
                 neck_data = self.get_neck_from_redis()
                 self.set_position(neck_data)
                 
