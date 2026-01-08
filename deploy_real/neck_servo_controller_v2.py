@@ -277,8 +277,7 @@ class NeckServoController:
 
     def dxl_to_rad_position(self, dxl_pos, motor_index):
         """Convert Dynamixel position to radians relative to motor's center"""
-        # Dynamixel position to degrees (0-4095 maps to 0-360 deg)
-        motor_deg = (dxl_pos / self.DXL_MAX_POSITION) * 360.0
+        motor_deg = (dxl_pos / 4096.0) * 360.0
         
         center_deg = self.MOTOR_CENTER_DEG[motor_index]
         
