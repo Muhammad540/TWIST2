@@ -90,8 +90,10 @@ class NeckServoController:
                 data = r.get(self.neck_action_key)
                 if data:
                     cmd = json.loads(data)
-                    if len(cmd) >= 2:
+                    if len(cmd) == 2:
                         self.latest_neck_command = [float(cmd[0]), float(cmd[1])]
+                    elif len(cmd) == 32:
+                        self.latest_neck_command = [float(cmd[0][0]), float(cmd[0][1])]
             except Exception as e:
                 print(f"[red]Redis Worker Error: {e}[/]")
                 time.sleep(1)
